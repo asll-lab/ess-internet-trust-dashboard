@@ -37,7 +37,9 @@ summary(datos_limpios)
 
 saveRDS(datos_limpios, "data/datos_limpios.rds")
 
-
+dir.create("presentation")
+file.create("presentation/.gitkeep")
+dir.create("report/figuras")
 
 
 library(dplyr)
@@ -51,24 +53,27 @@ ggplot(datos_limpios, aes(x = factor(netusoft))) +
   facet_wrap(~round) +
   labs(title = "Frecuencia de uso de internet por ronda",
        x = "1=nunca ... 5=todos los días", y = "Cantidad de personas")
+ggsave("report/figuras/01_uso_internet_por_ronda.png", width = 8, height = 6, dpi = 300)
 
 # 2. Confianza social (ppltrst) — distribución por ronda
 ggplot(datos_limpios, aes(x = ppltrst)) +
   geom_histogram(binwidth = 1) +
   facet_wrap(~round) +
   labs(title = "Confianza social por ronda", x = "Confianza (0-10)", y = "Cantidad de personas")
+ggsave("report/figuras/02_confianza_por_ronda.png", width = 8, height = 6, dpi = 300)
 
 # 3. Edad — para saber si hay algún grupo etario sobre/sub-representado
 ggplot(datos_limpios, aes(x = agea)) +
   geom_histogram(binwidth = 5) +
   labs(title = "Distribución de edad", x = "Edad", y = "Cantidad de personas")
+ggsave("report/figuras/03_distribucion_edad.png", width = 8, height = 6, dpi = 300)
 
 
 table(datos_limpios$round)
 
 install.packages("psych")
 library(psych)
-alpha(datos_limpios[, c("ppltrst", "pplfair", "pplhlp")])
+psych::alpha(datos_limpios[, c("ppltrst", "pplfair", "pplhlp")])
 
 
 datos_limpios <- datos_limpios %>%
@@ -86,6 +91,8 @@ ggplot(resumen_confianza, aes(x = factor(netusoft), y = confianza_promedio)) +
   facet_wrap(~round) +
   labs(title = "Índice de confianza social promedio según frecuencia de uso de internet",
        x = "Uso de internet (1=nunca, 5=todos los días)", y = "Índice de confianza (0-10)")
+ggsave("report/figuras/04_uso_internet_vs_confianza.png", width = 8, height = 6, dpi = 300)
+
 
 # Confianza según grupo de edad
 datos_limpios <- datos_limpios %>%
@@ -103,6 +110,7 @@ ggplot(resumen_edad, aes(x = factor(netusoft), y = confianza_promedio, fill = gr
   labs(title = "Confianza social según uso de internet, por grupo de edad",
        x = "Uso de internet (1=nunca, 5=todos los días)", y = "Índice de confianza (0-10)",
        fill = "Grupo de edad")
+ggsave("report/figuras/05_confianza_por_edad_y_uso.png", width = 9, height = 6, dpi = 300)
 
 resumen_edu <- datos_limpios %>%
   filter(!is.na(eduyrs), eduyrs <= 25) %>%
@@ -115,6 +123,7 @@ ggplot(resumen_edu, aes(x = eduyrs, y = confianza_promedio)) +
   facet_wrap(~round) +
   labs(title = "Relación entre años de educación y confianza social",
        x = "Años de educación", y = "Índice de confianza promedio (0-10)")
+ggsave("report/figuras/06_educacion_vs_confianza.png", width = 8, height = 6, dpi = 300)
 
 
 resumen_pais <- datos_limpios %>%
@@ -127,5 +136,9 @@ ggplot(resumen_pais, aes(x = reorder(cntry, confianza_promedio), y = confianza_p
   coord_flip() +
   facet_wrap(~round) +
   labs(title = "Confianza social promedio por país", x = "País", y = "Índice de confianza (0-10)")
+ggsave("report/figuras/07_confianza_por_pais.png", width = 9, height = 7, dpi = 300)
 
 saveRDS(datos_limpios, "data/datos_limpios.rds")
+
+getwd()
+
