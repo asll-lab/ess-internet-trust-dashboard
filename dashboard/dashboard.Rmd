@@ -1,0 +1,143 @@
+---
+title: "Dashboard ESS: Internet y Confianza Social"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(crosstalk)
+library(rnaturalearth)
+library(sf)
+
+datos_limpios <- readRDS("../data/datos_limpios.rds")
+
+# Datos por país y ronda (para el filtro de país en Pestaña 1)
+datos_pais_ronda <- datos_limpios %>%
+  filter(!is.na(cntry)) %>%
+  group_by(cntry, round) %>%
+  summarise(uso_promedio = mean(netusoft, na.rm = TRUE),
+            confianza_promedio = mean(confianza_idx, na.rm = TRUE), .groups = "drop")
+
+sd_pais_ronda <- SharedData$new(datos_pais_ronda, key = ~cntry, group = "filtro_pais")
+
+# Datos para Pestaña 2 (segmentación por edad)
+resumen_edad <- datos_limpios %>%
+  filter(!is.na(grupo_edad)) %>%
+  group_by(round, grupo_edad, netusoft) %>%
+  summarise(confianza_promedio = mean(confianza_idx, na.rm = TRUE), .groups = "drop")
+
+sd_edad <- SharedData$new(resumen_edad, group = "filtro_edad_ronda")
+
+# Datos para Pestaña 3 (mapa + ranking vinculados)
+resumen_pais <- datos_limpios %>%
+  filter(!is.na(cntry)) %>%
+  group_by(cntry) %>%
+  summarise(confianza_promedio = mean(confianza_idx, na.rm = TRUE)) %>%
+  arrange(confianza_promedio)
+
+europa <- ne_countries(scale = "medium", continent = "Europe", returnclass = "sf") %>%
+  select(iso_a2, name, geometry) %>%
+  inner_join(resumen_pais, by = c("iso_a2" = "cntry"))
+
+sd_mapa <- SharedData$new(europa, key = ~iso_a2, group = "filtro_pais_mapa")
+sd_ranking <- SharedData$new(resumen_pais, key = ~cntry, group = "filtro_pais_mapa")
+```
+
+Panorama General
+=====================================
+
+Column {.sidebar data-width=200}
+-------------------------------------
+
+### Filtros
+
+```{r}
+filter_select("pais1", "País", sd_pais_ronda, ~cntry, multiple = TRUE)
+```
+
+*Deja vacío para ver todos los países, o selecciona uno o más.*
+
+Column
+-------------------------------------
+
+### Evolución del uso de internet y la confianza social (2016-2023)
+
+```{r}
+p1 <- ggplot(sd_pais_ronda, aes(x = factor(round), y = confianza_promedio, color = cntry, group = cntry)) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Ronda ESS", y = "Índice de confianza (0-10)", color = "País") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+ggplotly(p1, tooltip = c("cntry", "confianza_promedio")) %>%
+  highlight(on = "plotly_click", off = "plotly_doubleclick")
+```
+
+Relación Uso-Confianza
+=====================================
+
+Column {.sidebar data-width=200}
+-------------------------------------
+
+### Filtros
+
+```{r}
+filter_checkbox("edad1", "Grupo de edad", sd_edad, ~grupo_edad)
+filter_select("ronda1", "Ronda", sd_edad, ~round)
+```
+
+Column
+-------------------------------------
+
+### Confianza social según frecuencia de uso de internet y grupo de edad
+
+```{r}
+p2 <- ggplot(sd_edad, aes(x = factor(netusoft), y = confianza_promedio, fill = grupo_edad)) +
+  geom_col(position = "dodge") +
+  labs(x = "Uso de internet (1=nunca, 5=todos los días)", y = "Índice de confianza (0-10)",
+       fill = "Grupo de edad") +
+  theme_minimal()
+
+ggplotly(p2)
+```
+
+Comparación entre Países
+=====================================
+
+Column {data-width=550}
+-------------------------------------
+
+### Mapa de confianza social por país
+
+```{r}
+mapa <- plot_ly(sd_mapa, split = ~name, color = ~confianza_promedio,
+                 colors = "Blues", hoverinfo = "text",
+                 text = ~paste0(name, ": ", round(confianza_promedio, 2))) %>%
+  add_sf() %>%
+  layout(showlegend = FALSE) %>%
+  highlight(on = "plotly_click", off = "plotly_doubleclick", color = "orange")
+
+mapa
+```
+
+Column {data-width=450}
+-------------------------------------
+
+### Ranking de confianza social
+
+```{r, fig.height=8}
+ranking <- plot_ly(sd_ranking, x = ~confianza_promedio, y = ~reorder(cntry, confianza_promedio),
+                    type = "bar", orientation = "h",
+                    marker = list(color = "#2c7fb8")) %>%
+  layout(xaxis = list(title = "Índice de confianza (0-10)"), yaxis = list(title = "País")) %>%
+  highlight(on = "plotly_click", off = "plotly_doubleclick", color = "orange")
+
+ranking
+```
