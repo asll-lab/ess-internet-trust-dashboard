@@ -22,3 +22,6 @@ y confianza social, identificando posibles diferencias entre grupos etarios y ni
 4. Comparar los niveles de confianza social entre países y su estabilidad temporal, 
 identificando mercados con niveles relativamente altos o bajos de confianza y 
 traduciendo estos hallazgos en consideraciones contextuales para estrategias de producto digital.
+
+##Dashboard en vivo
+https://asll-lab.github.io/ess-internet-trust-dashboard/dashboard/dashboard.html
