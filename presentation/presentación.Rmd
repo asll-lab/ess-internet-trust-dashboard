@@ -1,0 +1,79 @@
+---
+title: "Uso de Internet y Confianza Social en Europa"
+subtitle: "European Social Survey, Rondas 8-11 (2016-2023)"
+author: "Antonia Le Cerf"
+date: "`r Sys.Date()`"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+
+datos_limpios <- readRDS("../data/datos_limpios.rds")
+
+resumen_ronda <- datos_limpios %>%
+  group_by(round) %>%
+  summarise(
+    n = n(),
+    uso_internet_promedio = round(mean(netusoft, na.rm = TRUE), 2),
+    confianza_promedio = round(mean(confianza_idx, na.rm = TRUE), 2)
+  )
+
+confianza_r8 <- resumen_ronda$confianza_promedio[resumen_ronda$round == 8]
+confianza_r11 <- resumen_ronda$confianza_promedio[resumen_ronda$round == 11]
+```
+
+## Objetivo
+
+Analizar la evolución de la relación entre el **uso de internet** y la **confianza social** en Europa (2016-2023), a partir de datos de la European Social Survey (ESS), para generar evidencia contextual que informe decisiones de diseño de producto sensibles a la confianza del usuario.
+
+## Datos y método
+
+- **Fuente:** European Social Survey, Rondas 8, 9, 10 y 11
+- **N total:** `r nrow(datos_limpios)` observaciones
+- **Índice de confianza social:** promedio de 3 ítems de confianza interpersonal (α de Cronbach = 0.79)
+- **Decisión metodológica clave:** en la Ronda 10 se excluyeron los países con modo de auto-completado (por la pandemia), para mantener consistencia metodológica
+
+## Indicadores principales por ronda
+
+```{r}
+kable(resumen_ronda,
+      col.names = c("Ronda", "N", "Uso internet (1-5)", "Confianza (0-10)"))
+```
+
+## Hallazgo principal
+
+```{r, fig.width=7, fig.height=4.5}
+ggplot(resumen_ronda, aes(x = factor(round))) +
+  geom_line(aes(y = confianza_promedio, group = 1, color = "Confianza social"), linewidth = 1) +
+  geom_point(aes(y = confianza_promedio, color = "Confianza social"), size = 2) +
+  geom_line(aes(y = uso_internet_promedio, group = 1, color = "Uso de internet"), linewidth = 1) +
+  geom_point(aes(y = uso_internet_promedio, color = "Uso de internet"), size = 2) +
+  labs(x = "Ronda ESS", y = "Valor promedio", color = "") +
+  theme_minimal(base_size = 13)
+```
+
+## Interpretación
+
+El uso de internet **aumentó de forma sostenida** (de `r resumen_ronda$uso_internet_promedio[1]` a `r resumen_ronda$uso_internet_promedio[4]`), pero la confianza social **no siguió la misma tendencia** — pasó de `r confianza_r8` a `r confianza_r11`, con una caída notoria durante la pandemia (Ronda 10).
+
+**Conclusión:** la relación positiva entre uso individual de internet y confianza (a nivel transversal) no implica que más digitalización agregada genere más confianza social en el tiempo.
+
+## Implicancias para diseño de producto
+
+- La confianza social de un país es más **estructural** (cultural) que **coyuntural** (nivel de digitalización)
+- Países con confianza social baja probablemente necesiten:
+    - Verificación de identidad más explícita
+    - Mayor transparencia en el uso de datos
+    - Onboarding progresivo que genere confianza paso a paso
+- Esto aplica independientemente de cuán digitalizada esté su población
+
+## Limitaciones
+
+- Relaciones **asociativas**, no causales
+- Ronda 10 excluye países con auto-completado (menor cobertura de países)
+- El dashboard interactivo completo está disponible en:
+  `https://asll-lab.github.io/ess-internet-trust-dashboard/dashboard/dashboard.html`
