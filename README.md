@@ -23,5 +23,19 @@ y confianza social, identificando posibles diferencias entre grupos etarios y ni
 identificando mercados con niveles relativamente altos o bajos de confianza y 
 traduciendo estos hallazgos en consideraciones contextuales para estrategias de producto digital.
 
-##Dashboard en vivo
+
+## Datos
+
+Los archivos originales de la European Social Survey no se incluyen en este 
+repositorio por su tamaño (>25MB, límite de GitHub). Para reproducir el análisis:
+
+1. Regístrate en https://www.europeansocialsurvey.org/data-portal
+2. Descarga en formato CSV las Rondas 8, 9, 10 y 11 (usa el archivo de 
+   entrevista cara a cara para la Ronda 10, no el de auto-completado)
+3. Guárdalos en la carpeta `data/` con estos nombres exactos:
+   `ess8.csv`, `ess9.csv`, `ess10.csv`, `ess11.csv`
+4. Corre `scripts/01_importar_limpiar.R` para generar `datos_limpios.rds`
+
+
+## Dashboard en vivo
 https://asll-lab.github.io/ess-internet-trust-dashboard/dashboard/dashboard.html
