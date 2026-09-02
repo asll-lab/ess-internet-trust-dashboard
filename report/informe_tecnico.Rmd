@@ -11,6 +11,7 @@ library(dplyr)
 library(ggplot2)
 library(knitr)
 
+
 datos_limpios <- readRDS("../data/datos_limpios.rds")
 
 resumen_ronda <- datos_limpios %>%
