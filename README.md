@@ -36,6 +36,8 @@ repositorio por su tamaño (>25MB, límite de GitHub). Para reproducir el análi
    `ess8.csv`, `ess9.csv`, `ess10.csv`, `ess11.csv`
 4. Corre `scripts/01_importar_limpiar.R` para generar `datos_limpios.rds`
 
+## Enlace al repositorio 
+https://github.com/asll-lab/ess-internet-trust-dashboard
 
 ## Dashboard en vivo
 https://asll-lab.github.io/ess-internet-trust-dashboard/dashboard/dashboard.html
